@@ -19,13 +19,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Password Manager',
+      title: 'Pass Me!',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.purple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Password Manager'),
+      home: const MyHomePage(title: 'Pass Me!'),
     );
   }
 }
