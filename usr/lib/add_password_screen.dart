@@ -22,13 +22,9 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
       });
 
       try {
-        final user = supabase.auth.currentUser;
-        if (user == null) {
-          throw Exception('User not authenticated');
-        }
-
+        // The user_id is now automatically set by the database thanks to the new default value policy.
+        // We no longer need to pass it from the client.
         await supabase.from('passwords').insert({
-          'user_id': user.id,
           'website': _websiteController.text,
           'username': _usernameController.text,
           'password': _passwordController.text,
