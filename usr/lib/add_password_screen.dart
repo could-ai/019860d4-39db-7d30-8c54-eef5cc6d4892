@@ -9,20 +9,50 @@ class AddPasswordScreen extends StatefulWidget {
 }
 
 class _AddPasswordScreenState extends State<AddPasswordScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _websiteController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isLoading = false;
 
-  void _savePassword() {
-    if (_websiteController.text.isNotEmpty &&
-        _usernameController.text.isNotEmpty &&
-        _passwordController.text.isNotEmpty) {
-      final newEntry = PasswordEntry(
-        website: _websiteController.text,
-        username: _usernameController.text,
-        password: _passwordController.text,
-      );
-      Navigator.pop(context, newEntry);
+  Future<void> _savePassword() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        final user = supabase.auth.currentUser;
+        if (user == null) {
+          throw Exception('User not authenticated');
+        }
+
+        await supabase.from('passwords').insert({
+          'user_id': user.id,
+          'website': _websiteController.text,
+          'username': _usernameController.text,
+          'password': _passwordController.text,
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Password saved successfully!')),
+          );
+          Navigator.pop(context, true);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error saving password: ${e.toString()}')),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
   }
 
@@ -37,45 +67,74 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.green.shade50,
       appBar: AppBar(
         title: const Text('Add New Password'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _savePassword,
-            tooltip: 'Save',
-          ),
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: SizedBox(
+                  height: 24, width: 24, child: CircularProgressIndicator()),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.save),
+              onPressed: _savePassword,
+              tooltip: 'Save',
+            ),
         ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _websiteController,
-              decoration: const InputDecoration(
-                labelText: 'Website / Service',
-                border: OutlineInputBorder(),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _websiteController,
+                decoration: const InputDecoration(
+                  labelText: 'Website / Service',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a website or service name';
+                  }
+                  return null;
+                },
               ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _usernameController,
-              decoration: const InputDecoration(
-                labelText: 'Username / Email',
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _usernameController,
+                decoration: const InputDecoration(
+                  labelText: 'Username / Email',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a username or email';
+                  }
+                  return null;
+                },
               ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a password';
+                  }
+                  return null;
+                },
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
