@@ -43,9 +43,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: Colors.black,
+        scaffoldBackgroundColor: Colors.green.shade900,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.purple,
+          seedColor: Colors.green,
           brightness: Brightness.dark,
         ),
         useMaterial3: true,
