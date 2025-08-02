@@ -63,7 +63,6 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green.shade50,
       appBar: AppBar(
         title: const Text('Add New Password'),
         actions: [
